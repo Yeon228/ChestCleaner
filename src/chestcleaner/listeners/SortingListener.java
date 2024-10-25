@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -39,26 +40,25 @@ public class SortingListener implements org.bukkit.event.Listener {
     private void onRightClick(PlayerInteractEvent e) {
 
         Player player = e.getPlayer();
-
+        if (player.hasCooldown(Material.IRON_HOE))return;
         if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (PluginConfigManager.isCleaningItemActive() && isPlayerHoldingACleaningItem(player)) {
-
                 if (isPlayerAllowedToCleanOwnInv(player) && SortingUtils.sortPlayerInvWithEffects(player)) {
                     damageItem(player);
                     e.setCancelled(true);
-
-                } else if (!PluginConfigManager.isOpenEvent()
-                        && !CMRegistry.isOnCooldown(CMRegistry.CMIdentifier.SORTING, player)
+                }
+                else if (!PluginConfigManager.isOpenEvent()
                         && player.hasPermission(PluginPermissions.CLEANING_ITEM_USE.getString())) {
-
                     Block b = BlockDetector.getTargetBlock(player);
 
                     if ((!InventoryDetector.hasInventoryHolder(b))
-                            || PluginConfigManager.getBlacklistInventory().contains(b.getType()))
-                    return;
+                            || PluginConfigManager.getBlacklistInventory().contains(b.getType())){
+                        return;
+                    }
 
                     if (InventorySorter.sortPlayerBlock(b, player)) {
                         damageItem(player);
+                        player.setCooldown(Material.IRON_HOE, 10);
                         InventorySorter.playSortingSound(player);
                         MessageSystem.sendSortedMessage(player);
                         e.setCancelled(true);
