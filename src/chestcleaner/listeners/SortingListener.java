@@ -40,9 +40,15 @@ public class SortingListener implements org.bukkit.event.Listener {
     private void onRightClick(PlayerInteractEvent e) {
 
         Player player = e.getPlayer();
+//        player.sendMessage("1");
         if (player.hasCooldown(Material.IRON_HOE))return;
+//        player.sendMessage("2");
         if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+//            player.sendMessage("3");
+//            player.sendMessage(PluginConfigManager.isCleaningItemActive() + " isItemActive");
+//            player.sendMessage(isPlayerHoldingACleaningItem(player) + " isHolding");
             if (PluginConfigManager.isCleaningItemActive() && isPlayerHoldingACleaningItem(player)) {
+//                player.sendMessage("4");
                 if (isPlayerAllowedToCleanOwnInv(player) && SortingUtils.sortPlayerInvWithEffects(player)) {
                     damageItem(player);
                     e.setCancelled(true);
@@ -50,13 +56,14 @@ public class SortingListener implements org.bukkit.event.Listener {
                 else if (!PluginConfigManager.isOpenEvent()
                         && player.hasPermission(PluginPermissions.CLEANING_ITEM_USE.getString())) {
                     Block b = BlockDetector.getTargetBlock(player);
-
+//                    player.sendMessage("5");
                     if ((!InventoryDetector.hasInventoryHolder(b))
                             || PluginConfigManager.getBlacklistInventory().contains(b.getType())){
                         return;
                     }
-
+//                    player.sendMessage("6");
                     if (InventorySorter.sortPlayerBlock(b, player)) {
+//                        player.sendMessage("7");
                         damageItem(player);
                         player.setCooldown(Material.IRON_HOE, 10);
                         InventorySorter.playSortingSound(player);
@@ -147,7 +154,8 @@ public class SortingListener implements org.bukkit.event.Listener {
     }
 
     private boolean isPlayerHoldingACleaningItem(Player player) {
-        return isPlayerHoldingCleaningItemInMainHand(player) || isPlayerHoldingCleaningItemInOffHand(player);
+        return player.getInventory().getItemInMainHand().getType().equals(Material.IRON_HOE) ||
+                player.getInventory().getItemInOffHand().getType().equals(Material.IRON_HOE);
     }
 
     private ItemStack getComparableItem(ItemStack item) {
@@ -163,17 +171,23 @@ public class SortingListener implements org.bukkit.event.Listener {
 
     private boolean isPlayerHoldingCleaningItemInMainHand(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
+        player.sendMessage("a");
         if (item.getType().equals(Material.AIR)) {
+            player.sendMessage("b");
             return false;
         }
+        player.sendMessage("c");
         return getComparableItem(item).isSimilar(PluginConfigManager.getCleaningItem());
     }
 
     private boolean isPlayerHoldingCleaningItemInOffHand(Player player) {
         ItemStack item = player.getInventory().getItemInOffHand();
+        player.sendMessage("a");
         if (item.getType().equals(Material.AIR)) {
+            player.sendMessage("b");
             return false;
         }
+        player.sendMessage("c");
         return getComparableItem(item).isSimilar(PluginConfigManager.getCleaningItem());
     }
 
@@ -192,16 +206,18 @@ public class SortingListener implements org.bukkit.event.Listener {
      *               damaged, in hand.
      */
     private void damageItem(Player player) {
-
         if (PluginConfigManager.isDurabilityLossActive()) {
 
             ItemStack item;
-            if (isPlayerHoldingCleaningItemInMainHand(player)) {
+            if (player.getInventory().getItemInMainHand().getType().equals(Material.IRON_HOE)){
                 item = player.getInventory().getItemInMainHand();
-            } else {
+            }
+            else if (player.getInventory().getItemInOffHand().getType().equals(Material.IRON_HOE)){
                 item = player.getInventory().getItemInOffHand();
             }
-
+            else {
+                return;
+            }
             ItemMeta itemMeta = item.getItemMeta();
             Damageable damageable = ((Damageable) itemMeta);
             if (damageable != null) {

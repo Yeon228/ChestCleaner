@@ -12,6 +12,7 @@ import chestcleaner.sorting.categorizer.MasterCategorizer;
 import chestcleaner.sorting.categorizer.PredicateCategorizer;
 
 import chestcleaner.utils.SortingAdminUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -104,6 +105,7 @@ public class PluginConfigManager {
 	}
 
 	public static ItemStack getCleaningItem() {
+		Bukkit.getLogger().info(PluginConfig.getConfig().getItemStack(PluginConfig.ConfigPath.CLEANING_ITEM.getPath()).getType().toString());
 		return PluginConfig.getConfig().getItemStack(PluginConfig.ConfigPath.CLEANING_ITEM.getPath());
 	}
 
